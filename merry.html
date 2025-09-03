@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>我们的婚礼请柬</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #fff;
+        }
+        /* 页面容器样式 */
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.6s ease;
+        }
+        .page.active {
+            display: flex;
+            opacity: 1;
+            transform: scale(1);
+        }
+        .page.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        /* 标题样式 */
+        .title {
+            font-size: 28px;
+            color: #e86a87;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        .title::after {
+            content: "";
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 2px;
+            background-color: #f5c0d1;
+        }
+        /* 第1页封面样式 */
+        #page1 {
+            background: linear-gradient(135deg, #fff5f8, #ffe6ef);
+        }
+        #page1 .main-title {
+            font-size: 36px;
+            color: #e86a87;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #e86a87, #f59fb8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        #page1 .sub-title {
+            font-size: 18px;
+            color: #999;
+            margin-bottom: 80px;
+        }
+        #page1 .couple-name {
+            font-size: 16px;
+            color: #666;
+            position: absolute;
+            bottom: 30px;
+        }
+        /* 花瓣动画 */
+        .petal {
+            position: absolute;
+            top: -20px;
+            width: 15px;
+            height: 15px;
+            background-color: #f5c0d1;
+            border-radius: 50% 0;
+            opacity: 0.7;
+            animation: fall 8s linear infinite;
+        }
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        /* 第2页新人故事样式 */
+        #page2 {
+            background-color: #fff;
+        }
+        #page2 .story-container {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        #page2 .couple-photo {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            border: 3px solid #f5c0d1;
+            object-fit: cover;
+        }
+        #page2 .story-text {
+            flex: 1;
+        }
+        #page2 .story-title {
+            font-size: 22px;
+            color: #e86a87;
+            margin-bottom: 15px;
+            padding-left: 10px;
+            border-left: 4px solid #f5c0d1;
+        }
+        #page2 .story-content {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.8;
+        }
+        /* 第3页婚礼详情样式 */
+        #page3 {
+            background-color: #fff;
+        }
+        #page3 .detail-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        #page3 .detail-card {
+            width: 100%;
+            padding: 20px;
+            background-color: #fff5f8;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(232, 106, 135, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        #page3 .detail-icon {
+            width: 30px;
+            height: 30px;
+            color: #e86a87;
+        }
+        #page3 .detail-text {
+            font-size: 16px;
+            color: #666;
+        }
+        #page3 .detail-text p {
+            margin-bottom: 8px;
+        }
+        /* 第4页回复样式 */
+        #page4 {
+            background-color: #fff;
+        }
+        #page4 .reply-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            margin-top: 20px;
+        }
+        #page4 .reply-btn {
+            width: 45%;
+            padding: 12px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        #page4 .btn-group {
+            display: flex;
+            justify-content: space-between;
+        }
+        #page4 .attend-btn {
+            background-color: #e86a87;
+            color: #fff;
+        }
+        #page4 .absent-btn {
+            background-color: #fff;
+            color: #e86a87;
+            border: 2px solid #e86a87;
+        }
+        #page4 .reply-btn:hover {
+            transform: scale(1.05);
+        }
+        #page4 .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        #page4 .reply-input {
+            padding: 12px 15px;
+            border: 2px solid #f5c0d1;
+            border-radius: 8px;
+            font-size: 16px;
+            color: #666;
+            outline: none;
+        }
+        #page4 .submit-btn {
+            padding: 12px 0;
+            background-color: #e86a87;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        /* 提示弹窗样式 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.3);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+        .modal-content {
+            padding: 30px 40px;
+            background-color: #fff;
+            border-radius: 12px;
+            font-size: 18px;
+            color: #e86a87;
+            text-align: center;
+        }
+        /* 第5页照片画廊样式 */
+        #page5 {
+            background-color: #fff;
+        }
+        #page5 .photo-container {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        #page5 .gallery-photo {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        #page5 .gallery-photo:hover {
+            transform: scale(1.05);
+        }
+        /* 照片预览样式 */
+        .photo-preview {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+        .preview-img {
+            max-width: 90%;
+            max-height: 80%;
+            border-radius: 8px;
+        }
+        /* 第6页结尾样式 */
+        #page6 {
+            background: linear-gradient(135deg, #fff5f8, #ffe6ef);
+        }
+        #page6 .message {
+            font-size: 18px;
+            color: #666;
+            text-align: center;
+            line-height: 1.8;
+            margin-bottom: 50px;
+        }
+        #page6 .highlight {
+            color: #e86a87;
+            font-size: 20px;
+            font-weight: 500;
+        }
+        #page6 .share-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+        #page6 .share-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        #page6 .share-icon {
+            width: 40px;
+            height: 40px;
+            color: #e86a87;
+        }
+        #page6 .share-text {
+            font-size: 14px;
+            color: #666;
+        }
+        #page6 .footer {
+            position: absolute;
+            bottom: 30px;
+            font-size: 14px;
+            color: #999;
+        }
+        /* 翻页箭头样式 */
+        .next-btn {
+            position: absolute;
+            bottom: 30px;
+            width: 30px;
+            height: 30px;
+            color: #e86a87;
+            cursor: pointer;
+            animation: bounce 1.5s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+    </style>
+    <!-- 引入图标库 -->
+    <link rel="stylesheet" href="https://cdn.tailwindcss.com">
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- 第1页：封面 -->
+    <div id="page1" class="page active">
+        <div class="main-title">我们结婚啦</div>
+        <div class="sub-title">诚邀您见证我们的幸福</div>
+        <div class="couple-name">[新郎姓名] & [新娘姓名]</div>
+        <i class="fa fa-angle-down next-btn" onclick="nextPage(1)"></i>
+    </div>
+
+    <!-- 第2页：新人故事 -->
+    <div id="page2" class="page">
+        <div class="story-container">
+            <img src="https://via.placeholder.com/180" alt="新人合照" class="couple-photo">
+            <div class="story-text">
+                <div class="story-title">关于我们</div>
+                <div class="story-content">
+                    2020年夏，在街角咖啡店初遇<br>
+                    2022年秋，一起看了第一场落叶<br>
+                    2023年冬，他用一束白玫瑰求婚<br>
+                    2024年秋，我们要成为一家人啦
+                </div>
+            </div>
+        </div>
+        <i class="fa fa-angle-down next-btn" onclick="nextPage(2)"></i>
+    </div>
+
+    <!-- 第3页：婚礼详情 -->
+    <div id="page3" class="page">
+        <div class="title">婚礼信息</div>
+        <div class="detail-container">
+            <div class="detail-card">
+                <i class="fa fa-clock-o detail-icon"></i>
+                <div class="detail-text">
+                    <p><strong>仪式时间：</strong>2024年10月18日 10:00-11:30</p>
+                    <p><strong>婚宴时间：</strong>2024年10月18日 12:00开席</p>
+                </div>
+            </div>
+            <div class="detail-card" id="location-card">
+                <i class="fa fa-map-marker detail-icon"></i>
+                <div class="detail-text">
+                    <p><strong>仪式/婚宴地点：</strong>XX市XX区XX酒店 三楼宴会厅</p>
+                    <p><strong>详细地址：</strong>XX路XX号（近XX地铁站）</p>
+                </div>
+            </div>
+            <div class="detail-card">
+                <i class="fa fa-bullhorn detail-icon"></i>
+                <div class="detail-text">
+                    <p><strong>温馨提示：</strong>建议提前30分钟到场，现场有指引牌</p>
+                    <p><strong>住宿咨询：</strong>联系新郎 [手机号] 享合作酒店优惠</p>
+                </div>
+            </div>
+        </div>
+        <i class="fa fa-angle-down next-btn" onclick="nextPage(3)"></i>
+    </div>
+
+    <!-- 第4页：宾客回复 -->
+    <div id="page4" class="page">
+        <div class="title">期待您的回复</div>
+        <div class="reply-container">
+            <div class="btn-group">
+                <button class="reply-btn attend-btn" onclick="selectReply('attend')">确认出席</button>
+                <button class="reply-btn absent-btn" onclick="selectReply('absent')">无法出席</button>
+            </div>
+            <div class="input-group">
+                <input type="text" class="reply-input" id="guest-name" placeholder="请输入您的姓名">
+                <input type="number" class="reply-input" id="guest-count" placeholder="同行人数（如有）">
+            </div>
+            <button class="submit-btn" onclick="submitReply()">提交回复</button>
+        </div>
+        <i class="fa fa-angle-down next-btn" onclick="nextPage(4)"></i>
+    </div>
+
+    <!-- 提示弹窗 -->
+    <div class="modal" id="reply-modal">
+        <div class="modal-content" id="modal-text">感谢您的回复，我们婚礼见！</div>
+    </div>
+
+    <!-- 第5页：照片画廊 -->
+    <div id="page5" class="page">
+        <div class="title">我们的小美好</div>
+        <div class="photo-container">
+            <img src="https://via.placeholder.com/100" alt="生活照1" class="gallery-photo" onclick="previewPhoto(this.src)">
+            <img src="https://via.placeholder.com/100" alt="生活照2" class="gallery-photo" onclick="previewPhoto(this.src)">
+            <img src="https://via.placeholder.com/100" alt="生活照3" class="gallery-photo" onclick="previewPhoto(this.src)">
+            <img src="https://via.placeholder.com/100" alt="生活照4" class="gallery-photo" onclick="previewPhoto(this.src)">
+            <img src="https://via.placeholder.com/100" alt="生活照5" class="gallery-photo" onclick="previewPhoto(this.src)">
+            <img src="https://via.placeholder.com/100" alt="生活照6" class="gallery-photo" onclick="previewPhoto(this.src)">
+        </div>
+        <i class="fa fa-angle-down next-btn" onclick="nextPage(5)"></i>
+    </div>
+
+    <!-- 照片预览弹窗 -->
+    <div class="photo-preview" id="photo-modal">
+        <img src="" alt="预览照片" class="preview-img" id="preview-img">
+    </div>
+
+    <!-- 第6页：结尾 -->
+    <div id="page6" class="page">
+        <div class="message">
+            感谢您的到来，让我们的婚礼更完整<br>
+            <span class="highlight">期待与您相聚！</span>
+        </div>
+        <div class="share-container">
+            <div class="share-btn" onclick="shareWechat()">
+                <i class="fa fa-weixin share-icon"></i>
+                <div class="share-text">微信好友</div>
+            </div>
+            <div class="share-btn" onclick="shareMoments()">
+                <i class="fa fa-comment share-icon"></i>
+                <div class="share-text">朋友圈</div>
+            </div>
+            <div class="share-btn" onclick="saveCover()">
+                <i class="fa fa-download share-icon"></i>
+                <div class="share-text">保存封面</div>
+            </div>
+        </div>
+        <div class="footer">2024年10月18日 · 我们的婚礼</div>
+        <i class="fa fa-angle-down next-btn" onclick="nextPage(6)"></i>
+    </div>
+
+    <script>
+        // 全局变量：当前选中的回复状态
+        let selectedReply = '';
+
+        // 页面加载时生成花瓣动画
+        window.onload = function() {
+            createPetals();
+        };
+
+        // 生成花瓣
+        function createPetals() {
+            const page1 = document.getElementById('page1');
+            const petalCount = 15;
+            for (let i = 0; i < petalCount; i++) {
+                const petal = document.createElement('div');
+                petal.className = 'petal';
+                // 随机位置、大小、动画延迟
+                petal.style.left = Math.random() * 100 + 'vw';
+                petal.style.width = Math.random() * 10 + 10 + 'px';
+                petal.style.height = Math.random() * 10 + 10 + 'px';
+                petal.style.animationDelay = Math.random() * 8 + 's';
+                petal.style.animationDuration = Math.random() * 4 + 6 + 's';
+                page1.appendChild(petal);
+            }
+        }
+
+        // 切换页面
+        function nextPage(currentPageNum) {
+            const currentPage = document.getElementById('page' + currentPageNum);
+            let nextPageNum = currentPageNum + 1;
+            // 第6页切换回第1页
+            if (currentPageNum === 6) {
+                nextPageNum = 1;
+            }
+            const nextPage = document.getElementById('page' + nextPageNum);
+            
+            // 页面过渡效果
+            currentPage.classList.remove('active');
+            currentPage.classList.add('hidden');
+            setTimeout(() => {
+                currentPage.classList.remove('hidden');
+                nextPage.classList.add('active');
+            }, 600);
+        }
+
+        // 选择回复状态
+        function selectReply(type) {
+            selectedReply = type;
+            // 重置按钮样式
+            const attendBtn = document.querySelector('.attend-btn');
+            const absentBtn = document.querySelector('.absent-btn');
+            attendBtn.style.backgroundColor = type === 'attend' ? '#e86a87' : '#fff';
+            attendBtn.style.color = type === 'attend' ? '#fff' : '#e86a87';
+            attendBtn.style.border = type === 'attend' ? 'none' : '2px solid #e86a87';
+            absentBtn.style.backgroundColor = type === 'absent' ? '#e86a87' : '#fff';
+            absentBtn.style.color = type === 'absent' ? '#fff' : '#e86a87';
+            absentBtn.style.border = type === 'absent' ? 'none' : '2px solid #e86a87';
+        }
+
+        // 提交回复
+        function submitReply() {
+            const guestName = document.getElementById('guest-name').value;
+            const guestCount = document.getElementById('guest-count').value;
+            
+            // 简单验证
+            if (!guestName) {
+                showModal('请输入您的姓名');
+                return;
+            }
+            if (!selectedReply) {
+                showModal('请选择是否出席');
+                return;
+            }
+
+            // 模拟提交（实际项目可对接后端接口）
+            const replyData = {
+                name: guestName,
+                count: guestCount || 1,
+                status: selectedReply === 'attend' ? '出席' : '缺席'
+            };
+            console.log('回复数据：', replyData);
+
+            // 显示提示弹窗
+            const modalText = selectedReply === 'attend' 
+                ? `感谢${guestName}的到来，我们婚礼见！` 
+                : `感谢${guestName}的回复，期待下次相聚！`;
+            showModal(modalText);
+
+            // 清空输入
+            document.getElementById('guest-name').value = '';
+            document.getElementById('guest-count').value = '';
+            selectedReply = '';
+            // 重置按钮样式
+            const attendBtn = document.querySelector('.attend-btn');
+            const absentBtn = document.querySelector('.absent-btn');
+            attendBtn.style.backgroundColor = '#e86a87';
+            attendBtn.style.color = '#fff';
+            attendBtn.style.border = 'none';
+            absentBtn.style.backgroundColor = '#fff';
+            absentBtn.style.color = '#e86a87';
+            absentBtn.style.border = '2px solid #e86a87';
+        }
+
+        // 显示提示弹窗
+        function showModal(text) {
+            const modal = document.getElementById('reply-modal');
+            const modalText = document.getElementById('modal-text');
+            modalText.textContent = text;
+            modal.style.display = 'flex';
+            // 2秒后关闭弹窗
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 2000);
+        }
+
+        // 照片预览
+        function previewPhoto(src) {
+            const photoModal = document.getElementById('photo-modal');
+            const previewImg = document.getElementById('preview-img');
+            previewImg.src = src;
+            photoModal.style.display = 'flex';
+        }
+
+        // 关闭照片预览（点击预览区域）
+        document.getElementById('photo-modal').addEventListener('click', function() {
+            this.style.display = 'none';
+        });
+
+        // 定位跳转（对接地图）
+        document.getElementById('location-card').addEventListener('click', function() {
+            // 替换为实际地址的地图链接（示例为百度地图）
+            const location = 'XX市XX区XX酒店 三楼宴会厅';
+            const encodedLocation = encodeURIComponent(location);
+            const mapUrl = `https://api.map.baidu.com/marker?location=&title=${encodedLocation}&content=${encodedLocation}&output=html&src=yourAppName`;
+            window.open(mapUrl, '_blank');
+        });
+
+        // 分享功能（模拟，实际需对接微信JS-SDK）
+        function shareWechat() {
+            showModal('已唤起微信好友分享');
+        }
+        function shareMoments() {
+            showModal('已唤起朋友圈分享');
+        }
+        function saveCover() {
+            // 模拟保存封面（实际需使用canvas截图或后端生成图片）
+            showModal('封面已保存至相册');
+        }
+    </script>
+</body>
+</html>
